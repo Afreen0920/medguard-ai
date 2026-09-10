@@ -12,8 +12,6 @@ MODEL_DIR = BASE_DIR / "models"
 MODEL_PATH = MODEL_DIR / "xgboost_model.pkl"
 FEATURE_COLUMNS_PATH = MODEL_DIR / "feature_columns.pkl"
 ENCODERS_PATH = MODEL_DIR / "encoders.pkl"
-
-
 def load_artifacts():
     model = joblib.load(MODEL_PATH)
     feature_columns = joblib.load(FEATURE_COLUMNS_PATH)
