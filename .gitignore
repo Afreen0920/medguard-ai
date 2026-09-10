@@ -1,1 +1,13 @@
+# Virtual environments
+venv/
+.venv/
 
+# Python cache
+__pycache__/
+*.pyc
+
+# Raw datasets
+data/raw/
+
+# Large generated datasets
+data/processed/*.csv
