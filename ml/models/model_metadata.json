@@ -1,0 +1,15 @@
+{
+  "best_model": "Random Forest",
+  "selection_metric": "f1",
+  "features": [
+    "classification",
+    "country",
+    "risk_class",
+    "implanted",
+    "distributed_to",
+    "manufacturer_id",
+    "name_length",
+    "description_length"
+  ],
+  "positive_label": "failure-related event"
+}
