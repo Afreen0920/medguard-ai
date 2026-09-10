@@ -1,0 +1,21 @@
+# Data Processing
+pandas
+numpy
+openpyxl
+
+# Machine Learning
+scikit-learn
+xgboost
+joblib
+
+# Explainable AI
+shap
+
+# Backend API
+fastapi
+uvicorn
+pydantic
+
+# HTTP / Environment
+requests
+python-dotenv
