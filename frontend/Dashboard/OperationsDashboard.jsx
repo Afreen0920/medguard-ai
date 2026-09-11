@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   fetchFleetStats,
   fetchEquipmentList,
@@ -8,24 +8,8 @@ import {
   acknowledgeAlert,
   resolveAlert,
   fetchLiveEventStream,
-  simulateTelemetryTick,
-  generateHistoricalTrend,
-  getRiskClassification
+  simulateTelemetryTick
 } from './apiContracts.js';
-
-/**
- * Recharts component loader supporting both bundler environments and CDN standalone.
- */
-const getRecharts = () => {
-  if (typeof window !== 'undefined' && window.Recharts) {
-    return window.Recharts;
-  }
-  try {
-    return require('recharts');
-  } catch (e) {
-    return null;
-  }
-};
 
 /**
  * Inline vector icon library for zero external package footprint.
@@ -156,13 +140,10 @@ const Icons = {
  * ============================================================================
  */
 export default function OperationsDashboard() {
-  // Recharts reference
-  const R = useMemo(() => getRecharts(), []);
-
   // Primary Domain State
   const [fleetStats, setFleetStats] = useState(null);
   const [allFleet, setAllFleet] = useState([]);
-  const [selectedEquipmentId, setSelectedEquipmentId] = useState('PUMP-042');
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState('DEV-001');
   const [shapData, setShapData] = useState(null);
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [alerts, setAlerts] = useState([]);
@@ -182,25 +163,18 @@ export default function OperationsDashboard() {
   const [criticalDeltaBanner, setCriticalDeltaBanner] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Focus and Reduced Motion detection
-  const prefersReducedMotion = useMemo(() => {
-    return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
-
   // --------------------------------------------------------------------------
   // INITIAL DATA BOOTSTRAP
   // --------------------------------------------------------------------------
   useEffect(() => {
     let mounted = true;
-    setIsLoading(true);
-
     Promise.all([
       fetchFleetStats(),
       fetchEquipmentList('All', ''),
       fetchAlerts(),
       fetchLiveEventStream(),
-      fetchEquipmentShap('PUMP-042'),
-      fetchEquipmentRecommendation('PUMP-042')
+      fetchEquipmentShap('DEV-001'),
+      fetchEquipmentRecommendation('DEV-001')
     ]).then(([stats, fleet, alertList, eventList, initialShap, initialRec]) => {
       if (!mounted) return;
       setFleetStats(stats);
@@ -211,8 +185,8 @@ export default function OperationsDashboard() {
       setAiRecommendation(initialRec);
       setPreviousCriticalCount(stats.critical);
       setIsLoading(false);
-    }).catch(err => {
-      console.error('Failed to bootstrap operations dashboard:', err);
+    }).catch(() => {
+      console.error('Failed to bootstrap operations dashboard.');
       setIsLoading(false);
     });
 
@@ -301,11 +275,6 @@ export default function OperationsDashboard() {
     return filteredFleet.slice(0, 4);
   }, [filteredFleet]);
 
-  // Historical trend time series for selected asset
-  const historicalTrend = useMemo(() => {
-    return generateHistoricalTrend(selectedEquipmentId, timeframe);
-  }, [selectedEquipmentId, timeframe]);
-
   // Unread Active Alerts Count for Badge
   const activeAlertsCount = useMemo(() => {
     return alerts.filter(a => a.status === 'active').length;
@@ -357,18 +326,6 @@ export default function OperationsDashboard() {
     }));
     triggerToast(`Incident ${alertId} marked as RESOLVED.`);
   };
-
-  // --------------------------------------------------------------------------
-  // RECHARTS DONUT DATA PREPARATION
-  // --------------------------------------------------------------------------
-  const donutData = useMemo(() => {
-    if (!fleetStats) return [];
-    return [
-      { name: 'Healthy', value: fleetStats.healthy, color: '#34D399' },
-      { name: 'Warning', value: fleetStats.atRisk, color: '#EAB308' },
-      { name: 'Critical', value: fleetStats.critical, color: '#EF4444' }
-    ];
-  }, [fleetStats]);
 
   // Donut SVG circumference fallback
   const donutGeometry = useMemo(() => {

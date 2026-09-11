@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * API CONTRACTS & MOCK ADAPTER FOR INDUSTRIAL OPERATIONS DASHBOARD
+ * API CONTRACTS & FASTAPI ADAPTER FOR INDUSTRIAL OPERATIONS DASHBOARD
  * ============================================================================
  * 
  * Purpose:
@@ -14,7 +14,7 @@
  * - Afreen (Agentic AI): Generates triage diagnostics & automated recommendations.
  * - Manideep & Yogesh (Backend): Mounts these structures via FastAPI routes.
  * - Chandrakala (Frontend Lead): Plugs OperationsDashboard.jsx into the main app
- *   and swaps the mock adapter functions with real FastAPI endpoints.
+ *   and connects these structures to the FastAPI endpoints.
  * ============================================================================
  */
 
@@ -891,30 +891,42 @@ export function simulateTelemetryTick(currentFleet, currentAlerts, currentEvents
 }
 
 // ----------------------------------------------------------------------------
-// 10. CONSUMABLE MOCK ADAPTER FUNCTIONS (Prepares for FastAPI Replacement)
+// 10. FASTAPI ADAPTER FUNCTIONS
 // ----------------------------------------------------------------------------
+
+const API_URL = import.meta.env?.VITE_API_URL || 'http://127.0.0.1:8001';
+
+async function requestApi(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.detail || `API request failed: ${response.status}`);
+  }
+  return response.json();
+}
 
 /**
  * Fetch high-level fleet statistics.
  * In production: Replace with `fetch('/api/fleet/summary')`
  */
 export async function fetchFleetStats() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const healthy = INITIAL_FLEET.filter(e => e.status === 'healthy').length;
-      const atRisk = INITIAL_FLEET.filter(e => e.status === 'warning').length;
-      const critical = INITIAL_FLEET.filter(e => e.status === 'critical').length;
-      resolve({
-        total: INITIAL_FLEET.length,
-        productionLines: 4,
-        healthy,
-        healthyPercent: +((healthy / INITIAL_FLEET.length) * 100).toFixed(1),
-        atRisk,
-        critical,
-        lastSynced: 'Simulation · Updated 2s ago'
-      });
-    }, 40);
-  });
+  const fleet = await fetchEquipmentList();
+  const healthy = fleet.filter(e => e.status === 'healthy').length;
+  const atRisk = fleet.filter(e => e.status === 'warning').length;
+  const critical = fleet.filter(e => e.status === 'critical').length;
+  return {
+    total: fleet.length,
+    productionLines: new Set(fleet.map(e => e.productionLine)).size,
+    healthy,
+    healthyPercent: fleet.length ? +((healthy / fleet.length) * 100).toFixed(1) : 0,
+    atRisk,
+    critical,
+    criticalChange: 0,
+    lastSynced: 'FastAPI · Updated just now'
+  };
 }
 
 /**
@@ -922,25 +934,7 @@ export async function fetchFleetStats() {
  * In production: Replace with `fetch('/api/equipment?status=' + filter + '&search=' + query)`
  */
 export async function fetchEquipmentList(statusFilter = 'All', searchQuery = '') {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      let list = [...INITIAL_FLEET];
-      if (statusFilter && statusFilter.toLowerCase() !== 'all') {
-        list = list.filter(item => item.status.toLowerCase() === statusFilter.toLowerCase());
-      }
-      if (searchQuery && searchQuery.trim() !== '') {
-        const q = searchQuery.toLowerCase().trim();
-        list = list.filter(item =>
-          item.equipmentId.toLowerCase().includes(q) ||
-          item.name.toLowerCase().includes(q) ||
-          item.productionLine.toLowerCase().includes(q)
-        );
-      }
-      // Sort by highest risk descending
-      list.sort((a, b) => b.failureRisk - a.failureRisk);
-      resolve(list);
-    }, 40);
-  });
+  return requestApi(`/equipment?status=${encodeURIComponent(statusFilter)}&search=${encodeURIComponent(searchQuery)}`);
 }
 
 /**
@@ -948,9 +942,20 @@ export async function fetchEquipmentList(statusFilter = 'All', searchQuery = '')
  * In production: Replace with `fetch('/api/equipment/' + equipmentId + '/shap')`
  */
 export async function fetchEquipmentShap(equipmentId) {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(getEquipmentShap(equipmentId)), 40);
-  });
+  const explanation = await requestApi(`/equipment/${encodeURIComponent(equipmentId)}/shap`);
+  return {
+    equipmentId,
+    predictedRisk: explanation.critical_risk_probability,
+    baseValue: explanation.base_value,
+    topFactors: explanation.top_factors.map(factor => ({
+      feature: factor.feature.replaceAll('_', ' '),
+      currentValue: '',
+      value: factor.value,
+      direction: factor.direction.startsWith('increases') ? 'increase' : 'decrease',
+      label: factor.direction,
+      contributionText: `${factor.value >= 0 ? '+' : ''}${factor.value.toFixed(3)}`
+    }))
+  };
 }
 
 /**
@@ -958,9 +963,15 @@ export async function fetchEquipmentShap(equipmentId) {
  * In production: Replace with `fetch('/api/equipment/' + equipmentId + '/recommendation')`
  */
 export async function fetchEquipmentRecommendation(equipmentId) {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(getAiRecommendation(equipmentId)), 40);
-  });
+  const response = await requestApi(`/equipment/${encodeURIComponent(equipmentId)}/recommendation`);
+  return {
+    equipmentId,
+    diagnosticHeadline: `${response.risk.risk_level} risk detected`,
+    recommendation: response.maintenance.recommendation,
+    priority: response.maintenance.priority.toLowerCase(),
+    source: 'MedGuard AI maintenance agent',
+    generatedAt: new Date().toISOString()
+  };
 }
 
 /**
@@ -968,9 +979,20 @@ export async function fetchEquipmentRecommendation(equipmentId) {
  * In production: Replace with `fetch('/api/alerts')`
  */
 export async function fetchAlerts() {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(INITIAL_ALERTS), 40);
-  });
+  const alerts = await requestApi('/alerts');
+  return alerts.map(alert => ({
+    id: alert.alert_id,
+    severity: alert.severity.toLowerCase() === 'high' ? 'warning' : alert.severity.toLowerCase(),
+    equipmentId: alert.equipment_id,
+    equipmentName: alert.equipment_id,
+    message: alert.message,
+    recommendation: 'Review the equipment risk assessment.',
+    timestamp: alert.created_at,
+    status: alert.status,
+    acknowledgedBy: alert.acknowledged_by,
+    acknowledgedAt: alert.acknowledged_at,
+    resolvedAt: alert.resolved_at
+  }));
 }
 
 /**
@@ -978,17 +1000,11 @@ export async function fetchAlerts() {
  * In production: Replace with `fetch('/api/alerts/' + alertId + '/acknowledge', { method: 'POST' })`
  */
 export async function acknowledgeAlert(alertId, operatorName = 'Operator M. Patel') {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      resolve({
-        success: true,
-        alertId,
-        acknowledgedBy: operatorName,
-        acknowledgedAt: now
-      });
-    }, 50);
+  const alert = await requestApi(`/alerts/${encodeURIComponent(alertId)}/acknowledge`, {
+    method: 'POST',
+    body: JSON.stringify({ operator_name: operatorName })
   });
+  return { success: true, alertId, acknowledgedBy: alert.acknowledged_by, acknowledgedAt: alert.acknowledged_at };
 }
 
 /**
@@ -996,17 +1012,11 @@ export async function acknowledgeAlert(alertId, operatorName = 'Operator M. Pate
  * In production: Replace with `fetch('/api/alerts/' + alertId + '/resolve', { method: 'POST' })`
  */
 export async function resolveAlert(alertId, operatorName = 'Operator M. Patel') {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      resolve({
-        success: true,
-        alertId,
-        resolvedBy: operatorName,
-        resolvedAt: now
-      });
-    }, 50);
+  const alert = await requestApi(`/alerts/${encodeURIComponent(alertId)}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ operator_name: operatorName })
   });
+  return { success: true, alertId, resolvedBy: alert.resolved_by, resolvedAt: alert.resolved_at };
 }
 
 /**
