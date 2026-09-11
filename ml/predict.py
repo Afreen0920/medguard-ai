@@ -3,8 +3,7 @@ import argparse
 import joblib
 import pandas as pd
 
-from preprocess import engineer_features
-
+from ml.preprocess import engineer_features
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / "models"

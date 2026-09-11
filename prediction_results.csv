@@ -1,0 +1,2 @@
+classification,country,risk_class,implanted,distributed_to,manufacturer_id,name,description,critical_risk_probability,predicted_critical
+Cardiovascular Devices,USA,3,No,Hospitals,10,Example Medical Device,Medical equipment,0.7854662,1

@@ -261,18 +261,22 @@ def load_and_merge(
     # Devices + Manufacturers
     # --------------------------------------------------------
 
+    manufacturer_cols = ["id", "name"]
+
+    if "parent_company" in manufacturers.columns:
+        manufacturer_cols.append("parent_company")
+
     manufacturer_data = manufacturers[
-        [
-            "id",
-            "name",
-            "parent_company"
-        ]
+        manufacturer_cols
     ].rename(
         columns={
             "id": "manufacturer_id",
             "name": "manufacturer_name"
         }
     )
+
+    if "parent_company" not in manufacturer_data.columns:
+        manufacturer_data["parent_company"] = "Unknown"
 
     df = devices.merge(
         manufacturer_data,

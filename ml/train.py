@@ -231,9 +231,10 @@ def run_training(
 # ============================================================
 
 if __name__ == "__main__":
+    RAW_DIR = BASE_DIR / "ml" / "data" / "raw"
 
     run_training(
-        "final_clean_devices.xlsx",
-        "final_clean_manufacturers.xlsx",
-        "final_clean_events.xlsx"
+        RAW_DIR / "devices-1681209661.csv",
+        RAW_DIR / "manufacturers-1681209657.csv",
+        RAW_DIR / "events-1681209680.csv"
     )
