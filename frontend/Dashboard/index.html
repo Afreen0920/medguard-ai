@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations Overview — Industrial AI Equipment Monitoring Console</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18, ReactDOM 18, Recharts 2, and Babel Standalone for Standalone Execution -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.4/babel.min.js"></script>
+
+  <style>
+    body {
+      background-color: #090C10;
+      color: #E5E7EB;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090C10; }
+    ::-webkit-scrollbar-thumb { background: #161B26; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #252D3D; }
+
+    /* ── Entrance Animations ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes shimmerGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,180,216,0); }
+      50%      { box-shadow: 0 0 18px 3px rgba(0,180,216,0.18); }
+    }
+    @keyframes pulseRing {
+      0%   { transform: scale(1);   opacity: 1; }
+      70%  { transform: scale(1.55); opacity: 0; }
+      100% { transform: scale(1);   opacity: 0; }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes barGrow {
+      from { width: 0 !important; }
+    }
+
+    /* ── Section entrance stagger ── */
+    .anim-section { animation: fadeInUp 0.45s cubic-bezier(.22,1,.36,1) both; }
+    .anim-section:nth-child(1) { animation-delay: 0.04s; }
+    .anim-section:nth-child(2) { animation-delay: 0.12s; }
+    .anim-section:nth-child(3) { animation-delay: 0.20s; }
+    .anim-section:nth-child(4) { animation-delay: 0.28s; }
+    .anim-section:nth-child(5) { animation-delay: 0.36s; }
+    .anim-section:nth-child(6) { animation-delay: 0.42s; }
+    .anim-section:nth-child(7) { animation-delay: 0.48s; }
+    .anim-section:nth-child(8) { animation-delay: 0.54s; }
+
+    /* ── KPI card hover ── */
+    .kpi-card {
+      transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s cubic-bezier(.22,1,.36,1);
+    }
+    .kpi-card:hover {
+      background-color: #101620 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+    }
+
+    /* ── Bar row hover ── */
+    .bar-row {
+      transition: background-color 0.2s ease, transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease;
+    }
+    .bar-row:hover {
+      transform: translateX(3px);
+      box-shadow: inset 3px 0 0 0 rgba(0,180,216,0.6);
+    }
+
+    /* ── Table row hover ── */
+    .tbl-row {
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tbl-row:hover {
+      background-color: #111a2a !important;
+      box-shadow: inset 3px 0 0 0 rgba(0,180,216,0.5);
+    }
+    .tbl-row.tbl-selected {
+      background-color: #141B26;
+      box-shadow: inset 3px 0 0 0 #00B4D8;
+    }
+
+    /* ── Telemetry card hover ── */
+    .telemetry-card {
+      transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.22s cubic-bezier(.22,1,.36,1), box-shadow 0.22s ease;
+    }
+    .telemetry-card:hover {
+      background-color: #131b2a !important;
+      border-color: #2A3A56 !important;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.5);
+    }
+
+    /* ── SHAP row hover ── */
+    .shap-row {
+      border-radius: 8px;
+      transition: background-color 0.18s ease;
+    }
+    .shap-row:hover {
+      background-color: #0F1520;
+    }
+
+    /* ── Dock action button hover ── */
+    .dock-action {
+      transition: color 0.18s ease, background-color 0.18s ease, transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease;
+    }
+    .dock-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,180,216,0.22);
+      color: #38BDF8 !important;
+    }
+
+    /* ── Button polish ── */
+    .btn-primary {
+      transition: background-color 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,180,216,0.3);
+    }
+    .btn-secondary {
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.18s ease;
+    }
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      background-color: #1E283C;
+      border-color: #2A3A56;
+    }
+
+    /* ── Donut legend row ── */
+    .legend-row {
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+    .legend-row:hover {
+      background-color: #141C2A;
+      transform: translateX(3px);
+    }
+
+    /* ── Alert card hover ── */
+    .alert-card {
+      transition: border-color 0.2s ease, transform 0.2s cubic-bezier(.22,1,.36,1);
+    }
+    .alert-card:hover {
+      border-color: #2A3A56;
+      transform: translateY(-2px);
+    }
+
+    /* ── Event row ── */
+    .event-row {
+      transition: background-color 0.18s ease, padding-left 0.2s ease;
+    }
+    .event-row:hover {
+      background-color: #0F1520;
+      padding-left: 8px;
+    }
+
+    /* ── Bar fill animation on mount ── */
+    .bar-fill { animation: barGrow 0.7s cubic-bezier(.22,1,.36,1) both; }
+  </style>
+</head>
+<body class="bg-[#090C10] antialiased selection:bg-cyan-500/20 selection:text-cyan-300">
+
+  <div id="root"></div>
+
+  <!-- STANDALONE TEST SCRIPT -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    // INLINE ICONS
+    const Icons = {
+      Gauge: () => (
+        <svg className="w-4 h-4 text-[#5A6578]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 15l3.5-3.5" /><path d="M20.3 18a9 9 0 1 0-16.6 0" />
+        </svg>
+      ),
+      Search: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+        </svg>
+      ),
+      Bell: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+      ),
+      ShieldCheck: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" />
+        </svg>
+      ),
+      User: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 0 0-16 0" />
+        </svg>
+      ),
+      ArrowRight: () => (
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+        </svg>
+      ),
+      ChevronRight: () => (
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      ),
+      TrendingUp: () => (
+        <svg className="w-3.5 h-3.5 text-[#E05252]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+        </svg>
+      ),
+      TrendingDown: () => (
+        <svg className="w-3.5 h-3.5 text-[#00B4D8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 17 13.5 8.5 8.5 13.5 2 7" /><polyline points="16 17 22 17 22 11" />
+        </svg>
+      ),
+      OverviewGrid: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />
+        </svg>
+      ),
+      Nodes: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="5" r="2.5" /><circle cx="5" cy="18" r="2.5" /><circle cx="19" cy="18" r="2.5" /><line x1="12" y1="7.5" x2="5" y2="15.5" /><line x1="12" y1="7.5" x2="19" y2="15.5" />
+        </svg>
+      ),
+      Wrench: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      ),
+      Close: () => (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
+      ),
+      Play: () => (
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+      ),
+      Pause: () => (
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
+        </svg>
+      ),
+      Expand: () => (<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" /></svg>),
+      Text: () => (<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="4" x2="12" y2="20" /></svg>),
+      Pencil: () => (<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>),
+      MessageCircle: () => (<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>)
+    };
+
+    // Deterministic Fleet Builder
+    function createInitialFleet() {
+      const fleet = [
+        {
+          equipmentId: 'PUMP-042',
+          name: 'Hydraulic Feed Pump',
+          failureRisk: 0.87,
+          status: 'critical',
+          priority: 'urgent',
+          lastUpdated: '2 min ago',
+          productionLine: 'Line 2 - High Pressure Feed',
+          telemetry: { vibration: 4.82, temperature: 88.4, pressure: 142.1, rpm: 1750 }
+        },
+        {
+          equipmentId: 'MOTOR-018',
+          name: 'Primary Drive Motor',
+          failureRisk: 0.74,
+          status: 'critical',
+          priority: 'high',
+          lastUpdated: '4 min ago',
+          productionLine: 'Line 1 - Extrusion Unit',
+          telemetry: { vibration: 3.91, temperature: 94.2, pressure: 110.0, rpm: 3100 }
+        },
+        {
+          equipmentId: 'COMP-007',
+          name: 'Air Compressor',
+          failureRisk: 0.61,
+          status: 'warning',
+          priority: 'medium',
+          lastUpdated: '8 min ago',
+          productionLine: 'Line 3 - Pneumatics Central',
+          telemetry: { vibration: 2.45, temperature: 76.0, pressure: 115.3, rpm: 2400 }
+        },
+        {
+          equipmentId: 'FAN-031',
+          name: 'Exhaust Ventilation Fan',
+          failureRisk: 0.40,
+          status: 'warning',
+          priority: 'medium',
+          lastUpdated: '12 min ago',
+          productionLine: 'Line 4 - Thermal Extraction',
+          telemetry: { vibration: 1.85, temperature: 62.5, pressure: 45.2, rpm: 920 }
+        },
+        {
+          equipmentId: 'PUMP-011',
+          name: 'Coolant Booster Pump',
+          failureRisk: 0.15,
+          status: 'healthy',
+          priority: 'low',
+          lastUpdated: '15 min ago',
+          productionLine: 'Line 1 - Auxiliary Cooling',
+          telemetry: { vibration: 0.82, temperature: 41.2, pressure: 62.0, rpm: 1450 }
+        }
+      ];
+
+      // Add 5 more critical to reach exactly 7
+      const moreCrit = [
+        { id: 'TURB-002', name: 'Feedwater Turbine', risk: 0.81, line: 'Line 2 - High Pressure Feed' },
+        { id: 'EXTR-014', name: 'Main Polymer Extruder', risk: 0.79, line: 'Line 1 - Extrusion Unit' },
+        { id: 'BOIL-009', name: 'High-Pressure Boiler Pump', risk: 0.76, line: 'Line 2 - High Pressure Feed' },
+        { id: 'GEAR-033', name: 'Heavy Drive Gearbox', risk: 0.73, line: 'Line 3 - Pneumatics Central' },
+        { id: 'GEN-005', name: 'Auxiliary Generator Stator', risk: 0.71, line: 'Line 4 - Thermal Extraction' }
+      ];
+      moreCrit.forEach(c => fleet.push({
+        equipmentId: c.id, name: c.name, failureRisk: c.risk, status: 'critical', priority: 'high',
+        lastUpdated: '5 min ago', productionLine: c.line,
+        telemetry: { vibration: 4.1, temperature: 86.0, pressure: 135.0, rpm: 1800 }
+      }));
+
+      // Add 15 more warning to reach exactly 17
+      for (let i = 0; i < 15; i++) {
+        fleet.push({
+          equipmentId: `WRN-${101 + i}`,
+          name: `Warning Subsystem #${i + 1}`,
+          failureRisk: +(0.44 + (i * 0.016)).toFixed(2),
+          status: 'warning',
+          priority: 'medium',
+          lastUpdated: `${10 + i} min ago`,
+          productionLine: `Line ${(i % 4) + 1}`,
+          telemetry: { vibration: 2.3, temperature: 68.0, pressure: 102.0, rpm: 1500 }
+        });
+      }
+
+      // Add 103 more healthy to reach exactly 104
+      for (let i = 0; i < 103; i++) {
+        fleet.push({
+          equipmentId: `HLT-${201 + i}`,
+          name: `Auxiliary Node #${i + 1}`,
+          failureRisk: +(0.08 + ((i % 25) * 0.01)).toFixed(2),
+          status: 'healthy',
+          priority: 'low',
+          lastUpdated: `${20 + (i % 30)} min ago`,
+          productionLine: `Line ${(i % 4) + 1}`,
+          telemetry: { vibration: 0.7, temperature: 39.0, pressure: 65.0, rpm: 1200 }
+        });
+      }
+
+      return fleet;
+    }
+
+    const SHAP_STORE = {
+      'PUMP-042': {
+        predictedRisk: 0.87, baseValue: 0.15,
+        factors: [
+          { feature: 'Vibration', reading: '4.82 mm/s', value: 0.42, dir: 'increase', label: 'pushes risk higher', text: '+0.42' },
+          { feature: 'Operating Temp', reading: '88.4 °C', value: 0.23, dir: 'increase', label: 'pushes risk higher', text: '+0.23' },
+          { feature: 'Discharge Pressure', reading: '142.1 PSI', value: 0.15, dir: 'increase', label: 'pushes risk higher', text: '+0.15' },
+          { feature: 'Bearing Seal Pressure', reading: '52 PSI', value: -0.08, dir: 'decrease', label: 'reduces risk', text: '-0.08' }
+        ]
+      },
+      'MOTOR-018': {
+        predictedRisk: 0.74, baseValue: 0.15,
+        factors: [
+          { feature: 'Winding Temp', reading: '94.2 °C', value: 0.38, dir: 'increase', label: 'pushes risk higher', text: '+0.38' },
+          { feature: 'Vibration Harmonic', reading: '3.91 mm/s', value: 0.29, dir: 'increase', label: 'pushes risk higher', text: '+0.29' },
+          { feature: 'Current Imbalance', reading: '48.6 A', value: 0.12, dir: 'increase', label: 'pushes risk higher', text: '+0.12' },
+          { feature: 'Cooling Fan RPM', reading: '3,100 RPM', value: -0.20, dir: 'decrease', label: 'reduces risk', text: '-0.20' }
+        ]
+      },
+      'COMP-007': {
+        predictedRisk: 0.61, baseValue: 0.15,
+        factors: [
+          { feature: 'Outlet Temp', reading: '76.0 °C', value: 0.31, dir: 'increase', label: 'pushes risk higher', text: '+0.31' },
+          { feature: 'Interstage Pressure', reading: '115.3 PSI', value: 0.22, dir: 'increase', label: 'pushes risk higher', text: '+0.22' },
+          { feature: 'Oil Viscosity', reading: 'Normal', value: -0.07, dir: 'decrease', label: 'reduces risk', text: '-0.07' }
+        ]
+      }
+    };
+
+    const AI_REC_STORE = {
+      'PUMP-042': {
+        diagnostic: 'Mechanical Bearing Degradation & Cavitation Imbalance',
+        rec: 'Inspect vibration and temperature anomalies. Immediate bearing lubrication check advised. Reduce pump output by 15% to mitigate bearing race micro-fissuring.',
+        priority: 'urgent'
+      },
+      'MOTOR-018': {
+        diagnostic: 'Stator Winding Overheating & Phase Current Imbalance',
+        rec: 'Thermal run-away risk detected. Dispatch electrical technician to check terminal connections and cooling airflow. Consider 20% throughput down-rate.',
+        priority: 'high'
+      },
+      'COMP-007': {
+        diagnostic: 'High Differential Pressure in Compression Chamber',
+        rec: 'Differential pressure exceeds nominal threshold. Inspect intake filter for particulate fouling during the scheduled shift change.',
+        priority: 'medium'
+      }
+    };
+
+    function OperationsDashboardShell() {
+      const [fleet, setFleet] = useState(createInitialFleet);
+      const [selectedEquipmentId, setSelectedEquipmentId] = useState('PUMP-042');
+      const [statusFilter, setStatusFilter] = useState('All');
+      const [timeframe, setTimeframe] = useState('24H');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+      const [alertsTab, setAlertsTab] = useState('active');
+      const [activeNavTab, setActiveNavTab] = useState('overview');
+      const [isSimulating, setIsSimulating] = useState(true);
+      const [simSec, setSimSec] = useState(2);
+      const [toastMessage, setToastMessage] = useState(null);
+
+      const [alerts, setAlerts] = useState([
+        {
+          id: 'ALT-801', severity: 'critical', equipmentId: 'PUMP-042',
+          message: 'Failure risk increased to 87%',
+          recommendation: 'Inspect vibration and temperature anomalies. Immediate bearing lubrication check advised.',
+          timestamp: '2 min ago', status: 'active', ackBy: null
+        },
+        {
+          id: 'ALT-802', severity: 'critical', equipmentId: 'MOTOR-018',
+          message: 'Thermal run-away risk detected (74%)',
+          recommendation: 'Reduce extrusion throughput by 20% and dispatch electrical maintenance.',
+          timestamp: '4 min ago', status: 'active', ackBy: null
+        },
+        {
+          id: 'ALT-803', severity: 'warning', equipmentId: 'COMP-007',
+          message: 'Pressure differential exceeds threshold (61%)',
+          recommendation: 'Schedule air filter inspection during upcoming shift transition.',
+          timestamp: '8 min ago', status: 'active', ackBy: null
+        }
+      ]);
+
+      const [events, setEvents] = useState([
+        { id: '1', time: '09:42:18', eq: 'PUMP-042', msg: 'Hydraulic Feed Pump failure risk increased to 87%', sev: 'critical' },
+        { id: '2', time: '09:40:12', eq: 'MOTOR-018', msg: 'Primary Drive Motor thermal anomaly detected (94.2 °C)', sev: 'critical' },
+        { id: '3', time: '09:37:05', eq: 'COMP-007', msg: 'Air Compressor differential pressure exceeded 115 PSI', sev: 'warning' },
+        { id: '4', time: '09:31:44', eq: 'LINE-2', msg: 'Line 2 - High Pressure Feed telemetry synchronized', sev: 'info' }
+      ]);
+
+      const triggerToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 2800);
+      };
+
+      // Controlled Simulation Loop
+      useEffect(() => {
+        if (!isSimulating) return;
+        const iv = setInterval(() => {
+          setSimSec(s => s >= 60 ? 2 : s + 3);
+          setFleet(prev => {
+            const list = [...prev];
+            const target = list.find(e => e.equipmentId === 'PUMP-042') || list[0];
+            const drift = (Math.random() - 0.48) * 0.01;
+            target.failureRisk = +(Math.min(Math.max(target.failureRisk + drift, 0.82), 0.94)).toFixed(2);
+            target.telemetry.vibration = +(target.telemetry.vibration + (drift * 2)).toFixed(2);
+            return list;
+          });
+        }, 3500);
+        return () => clearInterval(iv);
+      }, [isSimulating]);
+
+      // Derived Metrics
+      const totalCount = fleet.length; // 128
+      const healthyCount = fleet.filter(e => e.status === 'healthy').length;
+      const warningCount = fleet.filter(e => e.status === 'warning').length;
+      const criticalCount = fleet.filter(e => e.status === 'critical').length;
+      const healthyPct = ((healthyCount / totalCount) * 100).toFixed(1);
+
+      const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
+
+      const filteredFleet = useMemo(() => {
+        let list = [...fleet];
+        if (statusFilter.toLowerCase() !== 'all') {
+          list = list.filter(e => e.status.toLowerCase() === statusFilter.toLowerCase());
+        }
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase().trim();
+          list = list.filter(e => e.equipmentId.toLowerCase().includes(q) || e.name.toLowerCase().includes(q));
+        }
+        list.sort((a, b) => b.failureRisk - a.failureRisk);
+        return list;
+      }, [fleet, statusFilter, searchQuery]);
+
+      const selectedEquipment = useMemo(() => {
+        return fleet.find(e => e.equipmentId === selectedEquipmentId) || fleet[0];
+      }, [fleet, selectedEquipmentId]);
+
+      const currentShap = useMemo(() => {
+        return SHAP_STORE[selectedEquipmentId] || SHAP_STORE['PUMP-042'];
+      }, [selectedEquipmentId]);
+
+      const currentAiRec = useMemo(() => {
+        return AI_REC_STORE[selectedEquipmentId] || AI_REC_STORE['PUMP-042'];
+      }, [selectedEquipmentId]);
+
+      // Donut Geometry
+      const donutGeometry = useMemo(() => {
+        const radius = 62;
+        const circ = 2 * Math.PI * radius;
+        const healthyStroke = (healthyCount / totalCount) * circ;
+        const warningStroke = (warningCount / totalCount) * circ;
+        const criticalStroke = (criticalCount / totalCount) * circ;
+        return {
+          radius, circ, healthyStroke, warningStroke, criticalStroke,
+          warningOffset: -healthyStroke,
+          criticalOffset: -(healthyStroke + warningStroke)
+        };
+      }, [healthyCount, warningCount, criticalCount, totalCount]);
+
+      const handleAcknowledgeAlert = (id) => {
+        setAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'acknowledged', ackBy: 'Operator M. Patel' } : a));
+        triggerToast(`Alert ${id} acknowledged.`);
+      };
+
+      const handleResolveAlert = (id) => {
+        setAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'resolved' } : a));
+        triggerToast(`Alert ${id} marked resolved.`);
+      };
+
+      const visibleAlerts = useMemo(() => {
+        return alerts.filter(a => a.status === alertsTab);
+      }, [alerts, alertsTab]);
+
+      return (
+        <div className="min-h-screen bg-[#090C10] text-[#E5E7EB] font-sans antialiased pb-32">
+          {/* HEADER */}
+          <header className="px-6 md:px-8 py-4 border-b border-[#141A24] bg-[#090C10]/95 backdrop-blur-md sticky top-0 z-30">
+            <div className="max-w-[1360px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-[20px] md:text-[22px] font-semibold tracking-tight text-white">
+                    Operations Overview
+                  </h1>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#161F2E] border border-[#212E45] text-[#38BDF8]">
+                    Console v2.4
+                  </span>
+                </div>
+                <p className="text-[12px] text-[#6B7280] mt-0.5">
+                  AI-powered equipment health monitoring & failure prevention
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F141E] border border-[#1A2232] text-[12px] text-[#9CA3AF]">
+                  <span className={`w-2 h-2 rounded-full ${isSimulating ? 'bg-[#22C55E]' : 'bg-[#EAB308]'}`}></span>
+                  <span>{isSimulating ? `Live Simulation · Updated ${simSec}s ago` : 'Simulation Paused'}</span>
+                  <button
+                    onClick={() => setIsSimulating(!isSimulating)}
+                    className="ml-1 p-1 hover:text-white"
+                  >
+                    {isSimulating ? <Icons.Pause /> : <Icons.Play />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search equipment..."
+                    className="w-44 md:w-56 bg-[#0E131C] border border-[#1B2232] rounded-lg py-1.5 pl-8 pr-3 text-[12px] text-white placeholder-[#5A6578] focus:outline-none focus:border-[#00B4D8]"
+                  />
+                  <div className="absolute left-2.5 top-2 text-[#5A6578]">
+                    <Icons.Search />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsAlertsOpen(true)}
+                  className="relative p-2 rounded-lg bg-[#0E131C] border border-[#1B2232] hover:text-white"
+                >
+                  <Icons.Bell />
+                  {activeAlertsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white">
+                      {activeAlertsCount}
+                    </span>
+                  )}
+                </button>
+
+                <div className="p-2 rounded-lg bg-[#0E131C] border border-[#1B2232] text-[#22C55E]">
+                  <Icons.ShieldCheck />
+                </div>
+
+                <div className="w-8 h-8 rounded-full bg-slate-800 border border-[#202A3C] flex items-center justify-center text-slate-300">
+                  <Icons.User />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* MAIN BODY */}
+          <main className="max-w-[1360px] mx-auto px-6 md:px-8 pt-6 space-y-6">
+
+            {/* 1. 4-QUADRANT KPI CARDS */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl overflow-hidden shadow-2xl">
+              <div className="grid grid-cols-2 divide-x divide-y divide-[#161B26]">
+                <div className="kpi-card p-6 cursor-default">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold tracking-wider text-[#6B7280] uppercase">TOTAL EQUIPMENT</span>
+                    <Icons.Gauge />
+                  </div>
+                  <div className="text-[38px] md:text-[42px] font-bold text-white tracking-tight mt-3 font-mono">{totalCount}</div>
+                  <div className="text-[12px] text-[#6B7280] mt-3">Across 4 production lines</div>
+                </div>
+
+                <div className="kpi-card p-6 cursor-default">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold tracking-wider text-[#6B7280] uppercase">HEALTHY</span>
+                    <span className="w-2 h-2 rounded-full bg-[#22C55E]"></span>
+                  </div>
+                  <div className="text-[38px] md:text-[42px] font-bold text-[#22C55E] tracking-tight mt-3 font-mono">{healthyCount}</div>
+                  <div className="text-[12px] text-[#6B7280] mt-3">{healthyPct}% of fleet</div>
+                </div>
+
+                <div className="kpi-card p-6 cursor-default">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold tracking-wider text-[#6B7280] uppercase">AT RISK</span>
+                    <span className="w-2 h-2 rounded-full bg-[#EAB308]"></span>
+                  </div>
+                  <div className="text-[38px] md:text-[42px] font-bold text-[#EAB308] tracking-tight mt-3 font-mono">{warningCount}</div>
+                  <div className="text-[12px] text-[#6B7280] mt-3">Requires monitoring (40% – 69%)</div>
+                </div>
+
+                <div className="kpi-card p-6 cursor-default">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold tracking-wider text-[#6B7280] uppercase">CRITICAL</span>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-60"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EF4444]"></span>
+                    </span>
+                  </div>
+                  <div className="text-[38px] md:text-[42px] font-bold text-[#EF4444] tracking-tight mt-3 font-mono">{criticalCount}</div>
+                  <div className="text-[12px] text-[#6B7280] mt-3">Action required (&ge; 70%)</div>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. EQUIPMENT RISK OVERVIEW */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#141A24]">
+                <div>
+                  <h2 className="text-[16px] font-semibold text-white tracking-tight">Equipment Risk Overview</h2>
+                  <p className="text-[13px] text-[#6B7280] mt-0.5">Current failure probability across monitored equipment</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center bg-[#121722] border border-[#1B2232] rounded-lg p-1 text-[12px]">
+                    {['All', 'Healthy', 'Warning', 'Critical'].map(st => (
+                      <button
+                        key={st} onClick={() => setStatusFilter(st)}
+                        className={`px-3 py-1 rounded-md transition font-medium ${
+                          statusFilter.toLowerCase() === st.toLowerCase() ? 'bg-[#1D2536] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#D1D5DB]'
+                        }`}
+                      >{st}</button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center bg-[#121722] border border-[#1B2232] rounded-lg p-1 text-[12px]">
+                    {['24H', '7D', '30D'].map(tf => (
+                      <button
+                        key={tf} onClick={() => { setTimeframe(tf); triggerToast(`Baseline trend updated to ${tf}.`); }}
+                        className={`px-3 py-1 rounded-md transition font-medium ${
+                          timeframe === tf ? 'bg-[#1D2536] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#D1D5DB]'
+                        }`}
+                      >{tf}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 pb-2 space-y-3.5">
+                {filteredFleet.slice(0, 5).map(item => {
+                  const isSelected = item.equipmentId === selectedEquipmentId;
+                  const riskPct = Math.round(item.failureRisk * 100);
+                  let barColor = 'bg-[#D94C4C]';
+                  if (item.status === 'warning') barColor = 'bg-[#D9943B]';
+                  else if (item.status === 'healthy') barColor = 'bg-[#3E9B6A]';
+
+                  return (
+                    <div
+                      key={item.equipmentId}
+                      onClick={() => { setSelectedEquipmentId(item.equipmentId); triggerToast(`Selected ${item.equipmentId}`); }}
+                      className={`bar-row flex items-center gap-4 py-1.5 px-3 rounded-lg cursor-pointer ${
+                        isSelected ? 'bg-[#141B26] ring-1 ring-[#00B4D8]/50' : ''
+                      }`}
+                    >
+                      <div className="w-24 text-right">
+                        <span className={`text-[12px] font-mono font-semibold tracking-wide ${isSelected ? 'text-[#00B4D8]' : 'text-white'}`}>
+                          {item.equipmentId}
+                        </span>
+                      </div>
+                      <div className="flex-1 h-7 rounded-[3px] bg-[#0E131C] relative flex items-center overflow-hidden">
+                        <div
+                          className={`bar-fill h-full rounded-[3px] transition-all duration-700 ease-out flex items-center justify-end pr-3 ${barColor}`}
+                          style={{ width: `${Math.max(riskPct, 4)}%` }}
+                        >
+                          <span className="text-[11px] font-bold text-slate-950/80 font-mono">{riskPct}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="flex justify-between items-center text-[11px] text-[#6B7280] pl-28 pr-3 pt-3 font-mono border-t border-[#141A24]">
+                  <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+              </div>
+            </section>
+
+            {/* 3. RISK DISTRIBUTION */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl">
+              <div className="pb-6 border-b border-[#141A24]">
+                <h2 className="text-[16px] font-semibold text-white tracking-tight">Risk Distribution</h2>
+                <p className="text-[13px] text-[#6B7280] mt-0.5">Fleet health by status</p>
+              </div>
+
+              <div className="py-8 flex flex-col md:flex-row items-center justify-center gap-14 lg:gap-24">
+                <div className="relative w-52 h-52 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r={donutGeometry.radius} className="stroke-[#121722]" strokeWidth="16" fill="transparent" />
+                    <circle cx="80" cy="80" r={donutGeometry.radius} stroke="#34D399" strokeWidth="16" strokeDasharray={`${donutGeometry.healthyStroke} ${donutGeometry.circ}`} fill="transparent" />
+                    <circle cx="80" cy="80" r={donutGeometry.radius} stroke="#EAB308" strokeWidth="16" strokeDasharray={`${donutGeometry.warningStroke} ${donutGeometry.circ}`} strokeDashoffset={donutGeometry.warningOffset} fill="transparent" />
+                    <circle cx="80" cy="80" r={donutGeometry.radius} stroke="#EF4444" strokeWidth="16" strokeDasharray={`${donutGeometry.criticalStroke} ${donutGeometry.circ}`} strokeDashoffset={donutGeometry.criticalOffset} fill="transparent" />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
+                    <span className="text-[34px] font-bold text-white leading-none font-mono">{totalCount}</span>
+                    <span className="text-[11px] tracking-widest text-[#6B7280] uppercase font-semibold mt-1">EQUIPMENT</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-[13px] w-52">
+                  <div onClick={() => setStatusFilter('Healthy')} className="legend-row flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer">
+                    <div className="flex items-center gap-2.5"><span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]"></span><span className="text-[#9CA3AF]">Healthy</span></div>
+                    <span className="text-white font-mono font-bold">{healthyCount} <span className="text-[#6B7280] text-[11px]">({healthyPct}%)</span></span>
+                  </div>
+                  <div onClick={() => setStatusFilter('Warning')} className="legend-row flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer">
+                    <div className="flex items-center gap-2.5"><span className="w-2.5 h-2.5 rounded-full bg-[#EAB308]"></span><span className="text-[#9CA3AF]">Warning</span></div>
+                    <span className="text-white font-mono font-bold">{warningCount} <span className="text-[#6B7280] text-[11px]">(13.3%)</span></span>
+                  </div>
+                  <div onClick={() => setStatusFilter('Critical')} className="legend-row flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer">
+                    <div className="flex items-center gap-2.5"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span><span className="text-[#9CA3AF]">Critical</span></div>
+                    <span className="text-white font-mono font-bold">{criticalCount} <span className="text-[#6B7280] text-[11px]">(5.4%)</span></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 4. PRIORITY EQUIPMENT */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl">
+              <div className="flex items-center justify-between pb-5 border-b border-[#141A24]">
+                <div>
+                  <h2 className="text-[16px] font-semibold text-white tracking-tight">Priority Equipment</h2>
+                  <p className="text-[13px] text-[#6B7280] mt-0.5">Assets requiring immediate attention</p>
+                </div>
+                <button onClick={() => triggerToast('Viewing all fleet telemetry.')} className="text-[13px] text-[#6B7280] hover:text-white flex items-center gap-1">
+                  <span>View all</span><Icons.ChevronRight />
+                </button>
+              </div>
+
+              <div className="overflow-x-auto pt-2">
+                <table className="w-full text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-[#141A24] text-[11px] text-[#6B7280] font-medium tracking-wider uppercase">
+                      <th className="py-3 px-2">EQUIPMENT</th>
+                      <th className="py-3 px-4">STATUS</th>
+                      <th className="py-3 px-4">FAILURE RISK</th>
+                      <th className="py-3 px-4">PRIORITY</th>
+                      <th className="py-3 px-4">LAST UPDATED</th>
+                      <th className="py-3 px-2 text-right">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#141924]">
+                    {filteredFleet.slice(0, 4).map(item => {
+                      const isSelected = item.equipmentId === selectedEquipmentId;
+                      const riskPct = Math.round(item.failureRisk * 100);
+                      return (
+                        <tr
+                          key={item.equipmentId}
+                          onClick={() => { setSelectedEquipmentId(item.equipmentId); triggerToast(`Selected ${item.name}`); }}
+                          className={`tbl-row cursor-pointer ${isSelected ? 'tbl-selected' : ''}`}
+                        >
+                          <td className="py-4 px-2">
+                            <div className={`font-semibold font-mono ${isSelected ? 'text-[#00B4D8]' : 'text-white'}`}>{item.equipmentId}</div>
+                            <div className="text-[12px] text-[#6B7280] mt-0.5">{item.name}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium ${
+                              item.status === 'critical' ? 'bg-[#2D1619] border border-[#521E24] text-[#EF4444]' :
+                              item.status === 'warning' ? 'bg-[#2A1F14] border border-[#52381B] text-[#EAB308]' :
+                              'bg-[#132A1F] border border-[#1F5438] text-[#22C55E]'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'critical' ? 'bg-[#EF4444]' : item.status === 'warning' ? 'bg-[#EAB308]' : 'bg-[#22C55E]'}`}></span>
+                              <span className="capitalize">{item.status}</span>
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className={`font-bold font-mono text-[14px] ${
+                              item.status === 'critical' ? 'text-[#EF4444]' : item.status === 'warning' ? 'text-[#EAB308]' : 'text-[#22C55E]'
+                            }`}>{riskPct}%</span>
+                          </td>
+                          <td className="py-4 px-4 capitalize text-[#D1D5DB] font-medium">{item.priority}</td>
+                          <td className="py-4 px-4 text-[#6B7280] font-mono text-[12px]">{item.lastUpdated}</td>
+                          <td className="py-4 px-2 text-right">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEquipmentId(item.equipmentId);
+                                const el = document.getElementById('investigation-section');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                              }}
+                              className="btn-primary inline-flex items-center gap-1 text-[#00B4D8] hover:text-[#38BDF8] font-medium"
+                            >
+                              <span>View</span><Icons.ArrowRight />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* 5. EQUIPMENT DETAIL & LIVE TELEMETRY PANEL */}
+            <section id="investigation-section" className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl scroll-mt-20">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#141A24]">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[18px] font-bold text-white font-mono">{selectedEquipment.equipmentId}</span>
+                    <span className="text-[14px] text-slate-300 font-medium">{selectedEquipment.name}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                      selectedEquipment.status === 'critical' ? 'bg-[#2D1619] text-[#EF4444]' :
+                      selectedEquipment.status === 'warning' ? 'bg-[#2A1F14] text-[#EAB308]' :
+                      'bg-[#132A1F] text-[#22C55E]'
+                    }`}>
+                      {selectedEquipment.status}
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-[#6B7280] mt-1">
+                    Plant Assignment: <span className="text-slate-300">{selectedEquipment.productionLine}</span> · Failure Risk: <span className="text-white font-bold font-mono">{Math.round(selectedEquipment.failureRisk * 100)}%</span>
+                  </p>
+                </div>
+                <div className="text-right text-[12px] text-[#6B7280]">
+                  Telemetry Transmission: <span className="text-slate-300 font-mono">{selectedEquipment.lastUpdated}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-5">
+                <div className="telemetry-card bg-[#101520] border border-[#1A2234] rounded-lg p-4">
+                  <div className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold">Vibration (RMS)</div>
+                  <div className="text-[24px] font-bold text-white mt-1 font-mono">{selectedEquipment.telemetry?.vibration ?? 4.82} <span className="text-[12px] text-[#6B7280]">mm/s</span></div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#EF4444]"><span>▲ +0.08</span><span className="text-[#6B7280]">drift</span></div>
+                </div>
+
+                <div className="telemetry-card bg-[#101520] border border-[#1A2234] rounded-lg p-4">
+                  <div className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold">Operating Temp</div>
+                  <div className="text-[24px] font-bold text-white mt-1 font-mono">{selectedEquipment.telemetry?.temperature ?? 88.4} <span className="text-[12px] text-[#6B7280]">°C</span></div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#EF4444]"><span>▲ +0.4</span><span className="text-[#6B7280]">thermal shift</span></div>
+                </div>
+
+                <div className="telemetry-card bg-[#101520] border border-[#1A2234] rounded-lg p-4">
+                  <div className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold">Discharge Pressure</div>
+                  <div className="text-[24px] font-bold text-white mt-1 font-mono">{selectedEquipment.telemetry?.pressure ?? 142.1} <span className="text-[12px] text-[#6B7280]">PSI</span></div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#EAB308]"><span>Within limit</span></div>
+                </div>
+
+                <div className="telemetry-card bg-[#101520] border border-[#1A2234] rounded-lg p-4">
+                  <div className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold">Shaft Speed</div>
+                  <div className="text-[24px] font-bold text-white mt-1 font-mono">{selectedEquipment.telemetry?.rpm ?? 1750} <span className="text-[12px] text-[#6B7280]">RPM</span></div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#22C55E]"><span>Nominal speed</span></div>
+                </div>
+              </div>
+            </section>
+
+            {/* 6. SHAP EXPLAINABILITY */}
+            <section id="shap-section" className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl scroll-mt-24">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-[#141A24]">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-[16px] font-semibold text-white tracking-tight">Why is this equipment at risk?</h2>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#101826] border border-[#1E293B] text-[#00B4D8]">Model contribution</span>
+                  </div>
+                  <p className="text-[13px] text-[#6B7280] mt-0.5">Top factors contributing to the model prediction for <span className="text-white font-mono font-semibold">{selectedEquipment.name}</span></p>
+                </div>
+                <div className="flex items-center gap-5 text-[12px]">
+                  <div className="flex items-center gap-1.5"><Icons.TrendingUp /><span className="text-[#9CA3AF]">Increases risk</span></div>
+                  <div className="flex items-center gap-1.5"><Icons.TrendingDown /><span className="text-[#9CA3AF]">Reduces risk</span></div>
+                </div>
+              </div>
+
+              <div className="pt-4 pb-3 flex items-center justify-between text-[12px] border-b border-[#141A24]">
+                <div className="text-[#6B7280]">Base Population Risk: <span className="text-slate-300 font-mono">15%</span></div>
+                <div className="text-[#6B7280]">Model Predicted Risk: <span className="text-white font-bold font-mono text-[13px]">{Math.round(selectedEquipment.failureRisk * 100)}%</span></div>
+              </div>
+
+              <div className="space-y-2 pt-4">
+                {currentShap.factors.map((f, idx) => {
+                  const isInc = f.dir === 'increase';
+                  const barW = Math.min(Math.round((Math.abs(f.value) / 0.5) * 82), 85);
+                  return (
+                    <div key={idx} className="shap-row flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-2 px-2">
+                      <div className="w-44 text-[13px] text-[#9CA3AF]">
+                        <span className="text-white font-medium">{f.feature}</span>
+                        <span className="block text-[11px] text-[#6B7280] font-mono">{f.reading}</span>
+                      </div>
+                      <div className="flex-1 h-7 rounded-[3px] bg-[#0E131C] relative overflow-hidden flex items-center">
+                        <div
+                          className={`bar-fill h-full rounded-[3px] flex items-center px-3 transition-all duration-700 ease-out ${isInc ? 'bg-[#B84343]' : 'bg-[#0E8388]'}`}
+                          style={{ width: `${Math.max(barW, 24)}%` }}
+                        >
+                          <span className="text-[11px] font-normal text-white/90 whitespace-nowrap">{f.label}</span>
+                        </div>
+                      </div>
+                      <div className={`w-16 text-right font-bold text-[13px] font-mono ${isInc ? 'text-[#E05252]' : 'text-[#00B4D8]'}`}>
+                        {f.text}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* 7. AI MAINTENANCE INSIGHT */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl">
+              <div className="flex items-center justify-between pb-4 border-b border-[#141A24]">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-[#0F2232] text-[#38BDF8] border border-[#164157]"><Icons.ShieldCheck /></div>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-white tracking-tight">AI Maintenance Insight</h3>
+                    <p className="text-[11px] text-[#6B7280]">Automated diagnosis & remedial triage via Agentic AI - Afreen</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#2D1619] text-[#EF4444] border border-[#521E24]">
+                  {currentAiRec.priority}
+                </span>
+              </div>
+
+              <div className="pt-4 space-y-3">
+                <div className="text-[13px] font-bold text-white">"{currentAiRec.diagnostic}"</div>
+                <div className="text-[12px] text-[#9CA3AF] leading-relaxed bg-[#090C10] p-3.5 rounded-lg border border-[#141A24]">
+                  <span className="text-white font-medium">Recommendation: </span>{currentAiRec.rec}
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button onClick={() => triggerToast('Work order created for ' + selectedEquipment.equipmentId + '.')} className="btn-secondary px-3.5 py-1.5 rounded-lg bg-[#141C2A] text-slate-200 text-[12px] font-medium border border-[#212C42]">Create Work Order</button>
+                  <button onClick={() => triggerToast('Technician dispatched to ' + selectedEquipment.productionLine + '.')} className="btn-primary px-3.5 py-1.5 rounded-lg bg-[#00B4D8] hover:bg-[#0096B4] text-slate-950 text-[12px] font-bold">Dispatch Technician</button>
+                </div>
+              </div>
+            </section>
+
+            {/* 8. LIVE OPERATIONAL EVENT STREAM */}
+            <section className="anim-section bg-[#0D1117] border border-[#161B26] rounded-xl p-6 shadow-xl">
+              <div className="flex items-center justify-between pb-4 border-b border-[#141A24]">
+                <div>
+                  <h3 className="text-[15px] font-semibold text-white tracking-tight">Live Operational Event Stream</h3>
+                  <p className="text-[11px] text-[#6B7280]">Telemetry anomaly detection & automated incident transitions</p>
+                </div>
+                <span className="text-[11px] text-[#6B7280] font-mono">{events.length} logged</span>
+              </div>
+              <div className="divide-y divide-[#141924] pt-2">
+                {events.map(evt => (
+                  <div key={evt.id} className="event-row py-2.5 flex items-center justify-between gap-4 text-[12px] rounded px-1">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-mono text-[#6B7280] w-16">{evt.time}</span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${evt.sev === 'critical' ? 'bg-[#EF4444]' : evt.sev === 'warning' ? 'bg-[#EAB308]' : 'bg-[#00B4D8]'}`}></span>
+                      <span className="text-slate-300">{evt.msg}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-[#6B7280] hidden sm:inline">{evt.eq}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </main>
+
+          {/* ALERT DRAWER */}
+          {isAlertsOpen && (
+            <div className="fixed inset-0 z-50 overflow-hidden">
+              <div onClick={() => setIsAlertsOpen(false)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+              <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                <div className="w-screen max-w-md bg-[#0D1117] border-l border-[#1A202C] shadow-2xl flex flex-col">
+                  <div className="p-5 border-b border-[#161B26] flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 rounded-md bg-[#2D1619] text-[#EF4444]"><Icons.Bell /></div>
+                      <div>
+                        <h3 className="text-sm font-bold text-white">Active AI Triage Alerts</h3>
+                        <p className="text-[11px] text-[#6B7280]">Incident triage & lifecycle management</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setIsAlertsOpen(false)} className="p-1.5 text-[#6B7280] hover:text-white"><Icons.Close /></button>
+                  </div>
+
+                  <div className="flex items-center border-b border-[#161B26] px-5 text-[12px]">
+                    {[
+                      { id: 'active', label: `Active (${alerts.filter(a => a.status === 'active').length})` },
+                      { id: 'acknowledged', label: `Acknowledged (${alerts.filter(a => a.status === 'acknowledged').length})` },
+                      { id: 'resolved', label: `Resolved (${alerts.filter(a => a.status === 'resolved').length})` }
+                    ].map(tab => (
+                      <button
+                        key={tab.id} onClick={() => setAlertsTab(tab.id)}
+                        className={`py-3 px-3 font-medium transition border-b-2 ${
+                          alertsTab === tab.id ? 'border-[#00B4D8] text-white font-semibold' : 'border-transparent text-[#6B7280] hover:text-slate-200'
+                        }`}
+                      >{tab.label}</button>
+                    ))}
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+                    {visibleAlerts.length === 0 ? (
+                      <div className="py-16 text-center text-xs text-[#6B7280]">No alerts under <span className="text-white capitalize">{alertsTab}</span> status.</div>
+                    ) : (
+                      visibleAlerts.map(alert => (
+                        <div key={alert.id} className={`p-4 rounded-xl border space-y-2.5 ${alert.status === 'active' ? 'bg-[#111620] border-[#1A2130]' : 'bg-[#0E131C] border-[#161C28] opacity-80'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[12px] font-semibold text-[#00B4D8] font-mono">{alert.equipmentId}</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                              alert.severity === 'critical' ? 'bg-[#2D1619] text-[#EF4444]' : 'bg-[#2A1F14] text-[#EAB308]'
+                            }`}>{alert.severity}</span>
+                          </div>
+                          <div className="text-[13px] font-semibold text-white">{alert.message}</div>
+                          <div className="text-[12px] text-[#9CA3AF] bg-[#090C10] p-2.5 rounded-lg border border-[#141A24]">
+                            <span className="text-[#D1D5DB] font-medium">Recommendation: </span>{alert.recommendation}
+                          </div>
+                          {alert.ackBy && <div className="text-[11px] text-[#34D399] font-mono">✓ Acknowledged by {alert.ackBy}</div>}
+                          <div className="flex items-center justify-between pt-2">
+                            <span className="text-[11px] text-[#6B7280] font-mono">{alert.timestamp}</span>
+                            <div className="flex items-center gap-2">
+                              {alert.status === 'active' && (
+                                <button onClick={() => handleAcknowledgeAlert(alert.id)} className="px-2.5 py-1 rounded bg-[#D94C4C] hover:bg-[#E05252] text-white text-[11px] font-semibold">Acknowledge</button>
+                              )}
+                              {alert.status === 'acknowledged' && (
+                                <button onClick={() => handleResolveAlert(alert.id)} className="px-2.5 py-1 rounded bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 text-[11px] font-bold">Resolve</button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FLOATING BOTTOM DOCK */}
+          <footer className="fixed bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
+            <div className="pointer-events-auto bg-[#0E131C]/95 backdrop-blur-md border border-[#1D2536] shadow-2xl rounded-xl px-4 py-2 flex items-center gap-1 text-[12px]">
+
+              {/* Nav tabs */}
+              <button onClick={() => { setActiveNavTab('overview'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className={`dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg ${
+                  activeNavTab === 'overview' ? 'text-[#00B4D8] bg-[#101826]' : 'text-[#6B7280] hover:bg-[#101826]'
+                }`}>
+                <Icons.OverviewGrid /><span className="text-[10px] font-medium">Overview</span>
+              </button>
+
+              <button onClick={() => { setActiveNavTab('equipment'); triggerToast('128 production assets online · 4 lines active.'); }}
+                className={`dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg ${
+                  activeNavTab === 'equipment' ? 'text-[#00B4D8] bg-[#101826]' : 'text-[#6B7280] hover:bg-[#101826]'
+                }`}>
+                <Icons.Nodes /><span className="text-[10px] font-medium">Equipment</span>
+              </button>
+
+              <button onClick={() => setIsAlertsOpen(true)}
+                className={`dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg relative ${
+                  activeNavTab === 'alerts' ? 'text-[#00B4D8] bg-[#101826]' : 'text-[#6B7280] hover:bg-[#101826]'
+                }`}>
+                <Icons.Bell /><span className="text-[10px] font-medium">Alerts</span>
+                {activeAlertsCount > 0 && <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse"></span>}
+              </button>
+
+              <button onClick={() => { setActiveNavTab('maintenance'); triggerToast('Maintenance schedule synced · 4 lines.'); }}
+                className={`dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg ${
+                  activeNavTab === 'maintenance' ? 'text-[#00B4D8] bg-[#101826]' : 'text-[#6B7280] hover:bg-[#101826]'
+                }`}>
+                <Icons.Wrench /><span className="text-[10px] font-medium">Maintenance</span>
+              </button>
+
+              {/* Divider */}
+              <div className="w-px h-8 bg-[#1D2536] mx-1"></div>
+
+              {/* Operator Quick Actions */}
+              <button
+                onClick={() => triggerToast('Fleet health report generated · PDF ready to download.')}
+                className="dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-[#6B7280] hover:bg-[#101826]"
+                title="Export Fleet Report"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <span className="text-[10px] font-medium">Export</span>
+              </button>
+
+              <button
+                onClick={() => triggerToast('Maintenance window scheduled for ' + selectedEquipment.equipmentId + ' · Next shift.')}
+                className="dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-[#6B7280] hover:bg-[#101826]"
+                title="Schedule Maintenance"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/>
+                </svg>
+                <span className="text-[10px] font-medium">Schedule</span>
+              </button>
+
+              <button
+                onClick={() => { triggerToast('Running AI diagnostics on ' + selectedEquipment.equipmentId + ' · ETA 8s…'); const el = document.getElementById('shap-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+                className="dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-[#6B7280] hover:bg-[#101826]"
+                title="Run AI Diagnostics"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+                <span className="text-[10px] font-medium">Diagnose</span>
+              </button>
+
+              <button
+                onClick={() => triggerToast('Full fleet telemetry snapshot saved · ' + new Date().toLocaleTimeString())}
+                className="dock-action flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-[#6B7280] hover:bg-[#101826]"
+                title="Capture Fleet Snapshot"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 7l-7-5-7 5v15l7-5 7 5z"/><line x1="9" y1="2" x2="9" y2="17"/><line x1="16" y1="7" x2="16" y2="22"/>
+                </svg>
+                <span className="text-[10px] font-medium">Snapshot</span>
+              </button>
+
+            </div>
+          </footer>
+
+          {/* TOAST */}
+          {toastMessage && (
+            <div style={{ animation: 'slideInRight 0.3s cubic-bezier(.22,1,.36,1) both' }}
+              className="fixed top-20 right-6 z-50 bg-[#141B26] border border-[#00B4D8]/40 text-slate-100 text-[12px] px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-[#00B4D8] animate-pulse"></span>
+              <span>{toastMessage}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<OperationsDashboardShell />);
+  </script>
+</body>
+</html>
