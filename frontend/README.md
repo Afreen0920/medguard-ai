@@ -1,16 +1,269 @@
-# React + Vite
+# MedGuard AI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This directory contains the React/Vite frontend for MedGuard AI. It provides the login screen, equipment assessment form, risk visualization, SHAP risk explanation, maintenance recommendation, and human review workflow.
 
-Currently, two official plugins are available:
+The frontend does not train the model. It sends assessment data to the FastAPI backend and renders the prediction response.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What Happens in the Application
 
-## React Compiler
+```text
+User selects equipment and telemetry
+        |
+        v
+React sends POST /predict
+        |
+        v
+FastAPI prepares model features
+        |
+        v
+XGBoost returns failure probability
+        |
+        v
+SHAP returns key risk drivers
+        |
+        v
+Maintenance agent returns priority and recommendation
+        |
+        v
+Frontend displays risk, explanation, alert, and human review
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Requirements
 
-## Expanding the Oxlint configuration
+- Node.js
+- npm
+- The MedGuard FastAPI backend running on port `8002`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The backend must have the trained artifacts in the repository `models/` directory before predictions can run.
+
+## Step 1: Open the Frontend Directory
+
+From the repository root:
+
+```powershell
+cd frontend
+```
+
+This changes the terminal to the directory containing `package.json`.
+
+## Step 2: Install Frontend Packages
+
+Run this once, or whenever `package.json` changes:
+
+```powershell
+npm install
+```
+
+This installs React, React Router, Vite, Tailwind CSS, and the other frontend dependencies into `node_modules/`.
+
+## Step 3: Start the Backend First
+
+Open a separate terminal at the repository root and run:
+
+```powershell
+cd C:\Users\knred\Downloads\medguard-ai\medguard-ai
+python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8002
+```
+
+What this does:
+
+1. Imports the FastAPI application from `backend.main:app`.
+2. Loads the saved XGBoost model, encoders, and feature columns when needed.
+3. Reads the processed equipment dataset used by the Equipment API.
+4. Starts the API at `http://127.0.0.1:8002`.
+5. Reloads the backend when Python files change.
+
+Check that the backend is ready:
+
+```powershell
+Invoke-WebRequest http://127.0.0.1:8002/health -UseBasicParsing
+```
+
+The response should report:
+
+```json
+{"status":"ok","model_loaded":true}
+```
+
+## Step 4: Start Vite
+
+In the frontend terminal, run:
+
+```powershell
+npm run dev -- --host 127.0.0.1 --port 5174
+```
+
+What this does:
+
+1. Starts the Vite development server.
+2. Compiles and serves the React application.
+3. Enables hot module replacement for frontend edits.
+4. Uses the proxy in `vite.config.js` to forward `/api` requests to backend port `8002`.
+
+Open the displayed URL, normally:
+
+```text
+http://127.0.0.1:5174/
+```
+
+## Step 5: Login
+
+The login screen is a frontend workflow screen. After submitting valid-looking credentials, it navigates to the Assessment page. There is no backend authentication service connected to this screen.
+
+## Step 6: Select a Processed Device
+
+The Assessment page requests:
+
+```http
+GET /api/equipment?status=All
+```
+
+The Vite proxy forwards that request to:
+
+```http
+GET http://127.0.0.1:8002/equipment?status=All
+```
+
+The backend reads `ml/data/processed/medical_failure_dataset.csv`, which currently contains 500 devices. Selecting a numeric device ID loads the matching processed fields, including:
+
+- Device name
+- Classification
+- Country
+- Risk class
+- Implanted status
+- Manufacturer ID
+- Processed target condition
+
+## Step 7: Submit an Assessment
+
+Click **Analyze Equipment**. The frontend sends a request like:
+
+```http
+POST /api/predict
+```
+
+The proxy forwards it to the FastAPI backend. The request includes equipment fields, event counts, maintenance information, and telemetry values.
+
+The backend then:
+
+1. Validates the request with Pydantic.
+2. Removes UI-only equipment fields from the model payload.
+3. Applies the same feature engineering used during training.
+4. Loads saved encoders and feature-column order.
+5. Runs the trained XGBoost model.
+6. Calculates the critical-risk probability.
+7. Generates SHAP feature contributions.
+8. Sends the prediction and explanation to the maintenance agent.
+9. Saves equipment and any generated alert in SQLite.
+10. Returns `prediction`, `explanation`, and `decision` JSON to React.
+
+## Step 8: Understand the Result
+
+The Assessment page displays:
+
+- **Risk score**: predicted critical-failure probability.
+- **Risk level**: LOW, MEDIUM, HIGH, or CRITICAL.
+- **Risk chart**: visual percentage representation.
+- **Key risk drivers**: SHAP features that increase or reduce risk.
+- **Maintenance priority**: priority generated by the maintenance agent.
+- **Alert status**: whether the decision created an alert.
+- **Recommended action**: maintenance action returned by the agent.
+- **Human review**: approve, reject, or request additional inspection.
+
+## Step 9: Navigate to Result Sections
+
+The sidebar includes:
+
+- **Analyze Equipment**: returns to the assessment form.
+- **Risk Explanation**: scrolls to SHAP key drivers.
+- **Maintenance Review**: scrolls to maintenance priority and recommendation.
+
+Before an analysis is submitted, these sections explain that a result must be generated first.
+
+## Step 10: Build for Production
+
+Stop the development server if necessary, then run:
+
+```powershell
+npm run build
+```
+
+This creates the optimized production files in `dist/`. It checks that React imports, routes, JSX, CSS, and Vite configuration compile successfully.
+
+Preview the production build with:
+
+```powershell
+npm run preview -- --host 127.0.0.1 --port 4174
+```
+
+## Useful Commands
+
+Install packages:
+
+```powershell
+npm install
+```
+
+Start development server:
+
+```powershell
+npm run dev -- --host 127.0.0.1 --port 5174
+```
+
+Build frontend:
+
+```powershell
+npm run build
+```
+
+Run frontend linting:
+
+```powershell
+npm run lint
+```
+
+Preview production build:
+
+```powershell
+npm run preview -- --host 127.0.0.1 --port 4174
+```
+
+## Troubleshooting
+
+### The page shows zero devices or stays loading
+
+1. Confirm the backend terminal is still running.
+2. Open `http://127.0.0.1:8002/health`.
+3. Confirm the response contains `"model_loaded":true`.
+4. Open `http://127.0.0.1:8002/equipment?status=All`.
+5. Confirm that the response contains 500 records.
+6. Restart Vite.
+7. Hard-refresh the browser with `Ctrl+F5`.
+
+### Port 8002 is already in use
+
+Stop the old backend process or select another backend port and update the proxy target in `vite.config.js`.
+
+### The browser shows an old interface
+
+Stop older Vite servers, start the frontend from this directory, and open the new displayed URL. Then use `Ctrl+F5` to clear the cached JavaScript bundle.
+
+### The backend returns a model-artifact error
+
+From the repository root, install Python dependencies and retrain or restore the saved artifacts:
+
+```powershell
+python -m pip install -r requirements.txt
+cd ml
+python train.py
+```
+
+### The frontend build fails with an import error
+
+Run these commands from `frontend`, not from the repository parent directory:
+
+```powershell
+cd C:\Users\knred\Downloads\medguard-ai\medguard-ai\frontend
+npm install
+npm run build
+```

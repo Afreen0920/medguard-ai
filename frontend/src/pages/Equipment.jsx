@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+import { API_URL } from "../config";
 
 function Equipment() {
   const navigate = useNavigate();
@@ -63,7 +61,7 @@ function Equipment() {
 
       <div className="bg-white rounded-xl shadow p-6">
 
-        <h2 className="text-xl font-bold text-gray-800 mb-5">
+        <h2 className="text-xl font-bold text-black mb-5" style={{ color: "#111827" }}>
           Equipment List
         </h2>
 

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+import { API_URL } from "../config";
 
 function Maintenance() {
   const [equipment, setEquipment] = useState([]);
@@ -31,7 +29,7 @@ function Maintenance() {
   if (loading) {
     return (
       <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold text-black" style={{ color: "#111827" }}>
           Maintenance
         </h1>
 
@@ -71,7 +69,7 @@ function Maintenance() {
 
       <div className="bg-white rounded-xl shadow p-6">
 
-        <h2 className="text-xl font-bold text-gray-800 mb-5">
+        <h2 className="text-xl font-bold text-black mb-5" style={{ color: "#111827" }}>
           Maintenance Schedule
         </h2>
 

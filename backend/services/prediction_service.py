@@ -1,4 +1,5 @@
 from pathlib import Path
+from functools import lru_cache
 from typing import Any, Dict
 
 import joblib
@@ -22,6 +23,7 @@ def artifacts_available() -> bool:
 	))
 
 
+@lru_cache(maxsize=1)
 def load_artifacts():
 	if not artifacts_available():
 		raise FileNotFoundError(f"Model artifacts are missing from {MODEL_DIR}")

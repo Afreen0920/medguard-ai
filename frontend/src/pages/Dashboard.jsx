@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+import { API_URL } from "../config";
 
 function Dashboard() {
   const [equipment, setEquipment] = useState([]);
@@ -12,24 +10,23 @@ function Dashboard() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [equipmentResponse, alertsResponse] = await Promise.all([
-          fetch(`${API_URL}/equipment?status=All`),
-          fetch(`${API_URL}/alerts`),
-        ]);
+        const equipmentResponse = await fetch(`${API_URL}/equipment?status=All`);
 
         if (!equipmentResponse.ok) {
           throw new Error("Failed to load equipment");
         }
 
-        if (!alertsResponse.ok) {
-          throw new Error("Failed to load alerts");
-        }
-
         const equipmentData = await equipmentResponse.json();
-        const alertsData = await alertsResponse.json();
-
         setEquipment(equipmentData);
-        setAlerts(alertsData);
+
+        try {
+          const alertsResponse = await fetch(`${API_URL}/alerts`);
+          if (alertsResponse.ok) {
+            setAlerts(await alertsResponse.json());
+          }
+        } catch {
+          setAlerts([]);
+        }
       } catch (err) {
         console.error(err);
         setError("Unable to connect to backend.");
@@ -43,20 +40,16 @@ function Dashboard() {
 
   const totalEquipment = equipment.length;
 
-  const highRiskEquipment = equipment.filter(
-    (item) =>
-      item.status?.toLowerCase() === "critical" ||
-      item.failureRisk >= 0.8
+  const criticalEquipment = equipment.filter(
+    (item) => item.status?.toLowerCase() === "critical"
   ).length;
 
-  const activeAlerts = alerts.filter(
-    (alert) => alert.status?.toLowerCase() === "active"
+  const healthyEquipment = equipment.filter(
+    (item) => item.status?.toLowerCase() === "healthy"
   ).length;
 
-  const maintenanceDue = equipment.filter(
-    (item) =>
-      item.priority?.toLowerCase() === "urgent" ||
-      item.priority?.toLowerCase() === "high"
+  const modelHighRiskEquipment = equipment.filter(
+    (item) => item.failureRisk >= 0.8
   ).length;
 
   return (
@@ -92,7 +85,7 @@ function Dashboard() {
 
         <div className="bg-white rounded-xl shadow p-6">
           <p className="text-gray-500">
-            Total Equipment
+            Total Devices
           </p>
 
           <p className="text-3xl font-bold text-gray-800 mt-2">
@@ -102,31 +95,31 @@ function Dashboard() {
 
         <div className="bg-white rounded-xl shadow p-6">
           <p className="text-gray-500">
-            High Risk
+            Processed Critical
           </p>
 
           <p className="text-3xl font-bold text-red-600 mt-2">
-            {highRiskEquipment}
+            {criticalEquipment}
           </p>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
           <p className="text-gray-500">
-            Active Alerts
+            Processed Healthy
           </p>
 
           <p className="text-3xl font-bold text-orange-500 mt-2">
-            {activeAlerts}
+            {healthyEquipment}
           </p>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
           <p className="text-gray-500">
-            Maintenance Due
+            Model High Risk
           </p>
 
           <p className="text-3xl font-bold text-blue-600 mt-2">
-            {maintenanceDue}
+            {modelHighRiskEquipment}
           </p>
         </div>
 
@@ -135,7 +128,7 @@ function Dashboard() {
       {/* Equipment Overview */}
       <div className="bg-white rounded-xl shadow p-6">
 
-        <h2 className="text-xl font-bold text-gray-800 mb-5">
+        <h2 className="text-xl font-bold text-black mb-5" style={{ color: "#111827" }}>
           Equipment Overview
         </h2>
 

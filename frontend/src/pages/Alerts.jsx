@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+import { API_URL } from "../config";
 
 function Alerts() {
   const [alerts, setAlerts] = useState([]);
@@ -147,7 +145,7 @@ function Alerts() {
                     {alert.alert_id}
                   </p>
 
-                  <h2 className="text-xl font-bold text-gray-800 mt-1">
+                  <h2 className="text-xl font-bold text-black mt-1" style={{ color: "#111827" }}>
                     Equipment: {alert.equipment_id}
                   </h2>
 
