@@ -1,0 +1,18 @@
+ README.md                               | 295 [32m++++++++++++[m[31m-[m
+ backend/routes/equipment.py             |  49 [32m++[m[31m-[m
+ backend/services/prediction_service.py  |   2 [32m+[m
+ frontend/README.md                      | 271 [32m+++++++++++[m[31m-[m
+ frontend/src/App.css                    | 148 [32m++++++[m[31m-[m
+ frontend/src/App.jsx                    | 522 [32m+[m[31m----------------------[m
+ frontend/src/Layout.jsx                 |  11 [32m+[m[31m-[m
+ frontend/src/components/Sidebar.jsx     | 116 [32m+++[m[31m--[m
+ frontend/src/config.js                  |   1 [32m+[m
+ frontend/src/pages/Alerts.jsx           |   6 [32m+[m[31m-[m
+ frontend/src/pages/Assessment.jsx       | 720 [32m++++++++++++++++++++++++++++++++[m
+ frontend/src/pages/Dashboard.jsx        |  57 [32m++[m[31m-[m
+ frontend/src/pages/Equipment.jsx        |   6 [32m+[m[31m-[m
+ frontend/src/pages/EquipmentDetails.jsx |   4 [32m+[m[31m-[m
+ frontend/src/pages/Login.jsx            |  98 [32m+++[m[31m--[m
+ frontend/src/pages/Maintenance.jsx      |   8 [32m+[m[31m-[m
+ frontend/vite.config.js                 |   9 [32m+[m
+ 17 files changed, 1595 insertions(+), 728 deletions(-)
