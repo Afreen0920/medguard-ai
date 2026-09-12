@@ -1,4 +1,3 @@
-origin https://github.com/Afreen0920/medguard-ai.git
  import { Link, NavLink, useNavigate } from "react-router-dom";
 
 const menuItems = [
