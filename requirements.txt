@@ -7,7 +7,7 @@ openpyxl
 scikit-learn
 xgboost
 joblib
-
+imbalanced-learn
 # Explainable AI
 shap
 
